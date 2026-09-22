@@ -1,0 +1,9 @@
+# Core EMD3 simulation: two-type population integration, profile-likelihood and
+# AICc model comparison, Boolean attractor enumeration, design search, the
+# uncertainty ensemble and figure generation.
+numpy>=2.0
+scipy>=1.13
+matplotlib>=3.8
+
+# Regression tests only.
+pytest>=8.0

@@ -1,0 +1,773 @@
+{
+  "parameters": [
+    {
+      "name": "r_S",
+      "value": 0.55,
+      "meaning": "stem-like proliferation",
+      "basis": "Chosen. Stem-like proliferation rate."
+    },
+    {
+      "name": "d_S",
+      "value": 0.05,
+      "meaning": "stem-like death",
+      "basis": "Chosen. Stem-like death rate."
+    },
+    {
+      "name": "r_N",
+      "value": 0.6,
+      "meaning": "non-stem proliferation",
+      "basis": "Chosen. Non-stem proliferation rate."
+    },
+    {
+      "name": "d_N",
+      "value": 0.05,
+      "meaning": "non-stem death",
+      "basis": "Chosen. Non-stem death rate."
+    },
+    {
+      "name": "beta",
+      "value": 0.01,
+      "meaning": "dedifferentiation NSCC -> CSC   (the EMD3 event)",
+      "basis": "CHOSEN, not measured. Dedifferentiation NSCC \u2192 CSC \u2014 the EMD3 event itself. The whole identifiability question is whether a change in this parameter can be told apart from a change in the net fitness gap."
+    },
+    {
+      "name": "gamma",
+      "value": 0.12,
+      "meaning": "differentiation  CSC -> NSCC",
+      "basis": "CHOSEN. Differentiation CSC \u2192 NSCC. Enters the baseline stationary fraction jointly with beta AND with the fitness gap a \u2212 b; \u03b2/(\u03b2+\u03b3) alone pins it only when a = b."
+    }
+  ],
+  "exposures": [
+    {
+      "channel": "d_beta",
+      "agent": "induction",
+      "meaning": "Additive INCREASE in the dedifferentiation rate: \u0394\u03b2 > 0. This is exposure-induced conversion.",
+      "value_at_match": {
+        "induction": 0.032437643740258926,
+        "selection": 0.0,
+        "cytotoxicity": 0.0
+      }
+    },
+    {
+      "channel": "d_fit",
+      "agent": "selection",
+      "meaning": "Additive change in the net fitness gap (a \u2212 b), applied through r_S. Baseline conversion rates unchanged (\u0394\u03b2 = 0); cells still convert at \u03b2.",
+      "value_at_match": {
+        "induction": 0.0,
+        "selection": 0.20418926123952955,
+        "cytotoxicity": 0.0
+      }
+    },
+    {
+      "channel": "kill_N",
+      "agent": "cytotoxicity",
+      "meaning": "Additive death rate on NSCC only. Baseline conversion rates unchanged (\u0394\u03b2 = 0) and neither compartment divides faster.",
+      "value_at_match": {
+        "induction": 0.0,
+        "selection": 0.0,
+        "cytotoxicity": 0.20418926124265205
+      }
+    },
+    {
+      "channel": "kill_S",
+      "agent": "(unused in the matched set)",
+      "meaning": "Additive death rate on CSC only.",
+      "value_at_match": {
+        "induction": 0.0,
+        "selection": 0.0,
+        "cytotoxicity": 0.0
+      }
+    },
+    {
+      "channel": "d_gamma",
+      "agent": "(unused in the matched set)",
+      "meaning": "Additive change in differentiation.",
+      "value_at_match": {
+        "induction": 0.0,
+        "selection": 0.0,
+        "cytotoxicity": 0.0
+      }
+    }
+  ],
+  "state_groups": [
+    [
+      "Population state (ODE)",
+      [
+        [
+          "N",
+          "non-stem-like cell count (NSCC)"
+        ],
+        [
+          "S",
+          "stem-like cell count (CSC)"
+        ]
+      ]
+    ],
+    [
+      "Derived readouts",
+      [
+        [
+          "x = S/(N+S)",
+          "stem-like FRACTION \u2014 the quantity a flow assay reports"
+        ],
+        [
+          "ln(N+S)",
+          "ABSOLUTE COUNT on the NATURAL-log scale \u2014 the quantity that breaks the degeneracy. model.simulate uses np.log, and every count gap in the text is in natural-log units; this row previously read log\u2081\u2080, which was a labelling error, not a different calculation"
+        ]
+      ]
+    ],
+    [
+      "Boolean layer (separate, discrete)",
+      [
+        [
+          "E2F2, FZD10, WNT, \u2026",
+          "network nodes; asynchronous update"
+        ],
+        [
+          "stem basin",
+          "fraction of initial states reaching the stem attractor, meaned over repeated asynchronous trajectories per state \u2014 a PROBABILITY under update order, reported \u00b1 its Monte Carlo standard error"
+        ],
+        [
+          "immortal basin",
+          "same, for the immortal attractor; note this counts states that already carry TERT and is NOT reachability"
+        ],
+        [
+          "stem / immortal reached",
+          "REACHABILITY from a tumour-suppressor-intact, telomerase-negative start \u2014 the statistic that carries the KCC9 claim"
+        ]
+      ]
+    ]
+  ],
+  "checks": [
+    {
+      "cid": "V1",
+      "edge": "KCC8 -> EMD3 (upstream)",
+      "statement": "The experimentally supported perturbation -- E2F2 on, driving FZD10 and Wnt -- enlarges the stem-like basin of attraction",
+      "source": "Yang 2026 (Food Chem Toxicol 211:116003): arsenic induces stemness in MCF-10A via the E2F2/FZD10 axis. Network structure follows Hernandez-Magana 2024 (npj Syst Biol Appl 10:99).",
+      "passed": true
+    },
+    {
+      "cid": "V2",
+      "edge": "accessibility is not the same as a larger basin",
+      "statement": "The supported perturbation enlarges the basin but does not open a route from a tumour-suppressor-intact start; only adding an exploratory perturbation (p53 loss), outside the arsenic-supported clamp set, does",
+      "source": "The manuscript is explicit that the ability of an arbitrary in-silico perturbation to stabilise a stem-like attractor does not establish that the exposure produces that perturbation in cells. Here the distinction is measurable: basin size moves, accessibility does not.",
+      "passed": true
+    },
+    {
+      "cid": "V3",
+      "edge": "EMD3 -/-> KCC9 (OPPOSING, STRUCTURAL; TERT-negative start)",
+      "statement": "From a telomerase-negative start, driving the stem-like state to 100% reachability leaves the immortalisation readout at exactly zero -- stemness is not limitless replicative potential. V17 records that this is conditional on that start",
+      "source": "The refined KCC framework includes stem-cell genes among KCC9-relevant endpoints, but a stem-like state is not immortalisation. Encoded as wiring -- TERT has no activator on the exposure path -- so the model cannot score stemness as KCC9 even by accident. The reachability statistic this check reads was previously incapable of reporting anything but zero, whatever the wiring did; boolean.py records the defect and tests/test_regressions.py now rewires TERT onto the exposure path and asserts the statistic fires.",
+      "passed": true
+    },
+    {
+      "cid": "V4",
+      "edge": "the endpoint trap",
+      "statement": "An induction agent and a selection agent tuned to the same marker fraction at the same endpoint are indistinguishable AT that endpoint",
+      "source": "This is the pair every endpoint-only exposure study cannot resolve, and it is constructed rather than assumed.",
+      "passed": true
+    },
+    {
+      "cid": "V5",
+      "edge": "an INDUCTION-ONLY d_beta interval is not evidence of plasticity",
+      "statement": "Fitting an induction-only structure -- one that ENFORCES fitness parity -- to data generated by PURE SELECTION returns a d_beta interval excluding zero in essentially every replicate",
+      "source": "The manuscript asks whether the posterior for beta is distinguishable from zero. Under a structure that assumes the two compartments grow alike, it is -- reliably, and wrongly. A misspecified structure returns a confident answer, and confidence is not correctness. The check names the structure deliberately: V16 shows the same fractions give an interval covering zero once the fitness gap is free, so the failure belongs to the assumption, not to fraction data as such.",
+      "passed": true
+    },
+    {
+      "cid": "V6",
+      "edge": "more data makes the wrong answer MORE confident (RESTATED)",
+      "statement": "Extending follow-up NARROWS the d_beta interval while pushing its centre FURTHER from zero -- under a cytotoxic agent that carries no plasticity at all",
+      "source": "Under misspecification, additional data tightens an interval around the wrong value. Precision and validity are separate properties, and only one of them improves with n. RESTATED: this check previously compared false-positive RATES across designs. Once the cytotoxic control is properly endpoint-matched that rate is 100% in both designs, so there is no headroom for a strict inequality -- the earlier version passed only because the control was under-dosed. Interval width and centre still move, and they are what the claim was always about. See fit/FINDINGS.md.",
+      "passed": true
+    },
+    {
+      "cid": "V7",
+      "edge": "selection and differential death are ONE model",
+      "statement": "For the observed fraction, raising stem-cell growth and raising non-stem death are algebraically the same perturbation",
+      "source": "a - b = (r_S - d_S) - (r_N - d_N). No number of fraction timepoints separates them, because they are not two hypotheses.",
+      "passed": true
+    },
+    {
+      "cid": "V8",
+      "edge": "absolute counts break the degeneracy",
+      "statement": "Adding total cell counts drops the induction false-positive rate under a cytotoxic agent to zero, and identifies selection and cytotoxicity correctly",
+      "source": "The manuscript's point that absolute counts are substantially more informative than relative frequencies, made quantitative: a growth advantage makes the population larger, differential killing makes it smaller, and the fraction reports neither. Stated narrowly on purpose -- counts separate THESE TWO EXPOSURE CHANNELS given a known baseline. They do not separate proliferation from death in general: a total count constrains the NET rate r - d, so equal increases in both are invisible to it. Separating r from d needs a division or death readout, not a count.",
+      "passed": true
+    },
+    {
+      "cid": "V9",
+      "edge": "report a model comparison, not an interval",
+      "statement": "With counts, model comparison identifies a genuine induction agent as carrying a non-zero beta in essentially every replicate",
+      "source": "The defensible EMD3 analysis is a comparison across selection-only, induction-only, combined and differential-death structures -- not a credible interval on a transition rate.",
+      "passed": true
+    },
+    {
+      "cid": "V10",
+      "edge": "detection window (DESIGN OUTPUT)",
+      "statement": "Without sorting, the matched pair becomes separable within a few weeks past the endpoint at realistic measurement precision",
+      "source": "Computed at sigma = 0.03 absolute on the marker fraction with three replicates -- replicate variability, not counting error, which is the term that actually limits flow-cytometric fractions.",
+      "passed": true
+    },
+    {
+      "cid": "V11",
+      "edge": "the sorting contrast trades purity separation against replication",
+      "statement": "At three replicates per arm a 20-fold separation of residual purities reaches ~7% power and a 100-fold separation ~56%. Power rises with either input: holding 100-fold and moving to six replicates per arm reaches ~84%, while holding three replicates requires ~140-fold. Both levers are reported, because one combination is not a property of the design",
+      "source": "A verdict that the true contrast exceeds its critical value is 50% power at the boundary, so it cannot by itself recommend or reject an experiment. Power is reported instead, over both quantities an experimenter controls. The calculation is a prospective benchmark under a known-noise Gaussian contrast of four measured means; applying it to a single agent of unknown mechanism requires the observational units and the model-discrimination rule to be specified for that setting.",
+      "passed": true
+    },
+    {
+      "cid": "V12",
+      "edge": "washout adds NOTHING on fractions (NEGATIVE DESIGN RESULT)",
+      "statement": "Withdrawing the agent and following the marker fraction cannot separate the mechanisms: all arms follow identical post-washout trajectories. Only the count accumulated during exposure separates them",
+      "source": "The EMD2-4 plan lists a washout/reversal arm among the held-out conditions. It is implemented here and it does not work, for a reason that is structural rather than numerical: after withdrawal every arm returns to the same baseline parameters, and the matched arms are at the same fraction when the agent is removed, so the subsequent trajectories coincide by construction. Reported so the arm is not run in the expectation that it discriminates.",
+      "passed": true
+    },
+    {
+      "cid": "V13",
+      "edge": "the arsenic basin gain runs through the attributed pathway",
+      "statement": "Knocking down FZD10, or inhibiting WNT, abolishes the arsenic-induced enlargement of the stem-like basin -- but OVERSHOOTS baseline to zero, so blocking the pathway is not the same as reversing the exposure",
+      "source": "The plan asks whether reversal of the perturbed node restores attractor structure. It does not restore it, it removes it: the knockdowns take the stem basin to zero, below the ~20% the control network carries anyway. Epistasis on this network is not a simple reversal, and the distinction matters for interpreting a rescue experiment.",
+      "passed": true
+    },
+    {
+      "cid": "V14",
+      "edge": "accessibility does NOT move with dose (PLAN EXPECTATION REFUTED)",
+      "statement": "Mean first-passage time into the stem-like attractor is infinite under BOTH control and the supported arsenic perturbation -- the state is never reached from a tumour-suppressor-intact start, so MFPT cannot decrease with dose",
+      "source": "The plan's draft battery expects MFPT into the stem-like attractor to fall with dose. In this network it cannot, because the supported perturbation enlarges the basin without opening a route into it -- which is V2 restated as a rate. A build that reported a dose-dependent MFPT here would have had to reach for the unsupported perturbation to get one.",
+      "passed": true
+    },
+    {
+      "cid": "V15",
+      "edge": "the immortalisation BASIN is a misreading trap",
+      "statement": "Exposure enlarges the immortal basin (10% -> 14%) while immortal REACHABILITY stays exactly zero. The basin statistic counts states that already carry TERT; the exposure never turns TERT on",
+      "source": "Guards the KCC9 discipline against its most likely misreading. A reader quoting basin size alone would conclude that arsenic promotes immortalisation. It does not: every attractor in that basin is entered only from a start state where telomere maintenance is ALREADY on, and no perturbation on the exposure path can switch it on. Reachability, not basin size, is the statistic that carries the KCC9 claim.",
+      "passed": true
+    },
+    {
+      "cid": "V16",
+      "edge": "the false positive belongs to the STRUCTURE, not the data",
+      "statement": "Profiling d_beta under the COMBINED structure -- fitness gap free -- puts the interval back across zero for both d_beta = 0 agents, on exactly the same marker fractions that the induction-only structure calls plastic in every replicate. The cost is power, not validity: a genuine induction agent is detected in far fewer replicates at the short design than at the extended one",
+      "source": "Added after review observed that the build's own M_both structure already removes the false positive V5 reports, using fractions alone. The earlier framing -- that a d_beta interval is not evidence of plasticity -- was therefore too broad: an interval from a structure that leaves the fitness gap free is well behaved. What fractions alone cannot do is tell selection from differential death (V7), and what the combined structure costs is power. Both are better arguments for absolute counts than a false-positive rate that is an artefact of assuming fitness parity, and the battery should state the narrower claim it can defend.",
+      "passed": true
+    },
+    {
+      "cid": "V17",
+      "edge": "the KCC9 separation depends on the START STATE, not wiring alone",
+      "statement": "From a telomerase-NEGATIVE start, driving the stem-like state to 100% reachability leaves immortalisation at exactly zero. From a telomerase-POSITIVE start -- which is what the exemplar line actually is -- the same perturbation reaches immortalisation in every run. The separation is conditional, and the condition is a modelling choice",
+      "source": "Added after review noted that MCF-10A -- the exemplar in Yang 2026 -- is a spontaneously IMMORTALISED line, so a TERT-off start is not a validated representation of it. With TERT already on, IMMORTAL <- stem AND tert collapses to IMMORTAL <- stem and stemness scores as immortalisation one for one. The KCC9 discipline survives for the SUPPORTED perturbation under either start, because arsenic never reaches the stem-like state at all; what does not survive is the claim that the model cannot score stemness as KCC9 'even by accident'. It can, under the start state the exemplar implies. This check asserts both halves so the conditional is on the record.",
+      "passed": true
+    }
+  ],
+  "matched_pair": {
+    "x_ind_at_match": 0.2000000000002955,
+    "x_sel_at_match": 0.2000000001151563,
+    "d_beta": 0.032437643740258926,
+    "d_fit": 0.20418926123952955
+  },
+  "degeneracy": {
+    "max_abs_diff_fraction": 8.387290861833208e-11,
+    "log_count_gap_day60": 8.999999991395903
+  },
+  "false_positive_rates": {
+    "short": {
+      "induction": {
+        "ci_excl": 1.0,
+        "width": 0.008,
+        "point": 0.02468340477470428,
+        "lo": 0.022,
+        "hi": 0.028,
+        "right_censored": 0.0,
+        "structure": "ind"
+      },
+      "selection": {
+        "ci_excl": 1.0,
+        "width": 0.006,
+        "point": 0.019250905963952847,
+        "lo": 0.016,
+        "hi": 0.022,
+        "right_censored": 0.0,
+        "structure": "ind"
+      },
+      "cytotoxicity": {
+        "ci_excl": 1.0,
+        "width": 0.006,
+        "point": 0.019250914590953988,
+        "lo": 0.016,
+        "hi": 0.022,
+        "right_censored": 0.0,
+        "structure": "ind"
+      }
+    },
+    "extended": {
+      "induction": {
+        "ci_excl": 1.0,
+        "width": 0.0040000000000000036,
+        "point": 0.0240178443606104,
+        "lo": 0.022,
+        "hi": 0.026000000000000002,
+        "right_censored": 0.0,
+        "structure": "ind"
+      },
+      "selection": {
+        "ci_excl": 1.0,
+        "width": 0.004,
+        "point": 0.026631033535914735,
+        "lo": 0.024,
+        "hi": 0.03,
+        "right_censored": 0.0,
+        "structure": "ind"
+      },
+      "cytotoxicity": {
+        "ci_excl": 1.0,
+        "width": 0.004,
+        "point": 0.02663101474932352,
+        "lo": 0.024,
+        "hi": 0.03,
+        "right_censored": 0.0,
+        "structure": "ind"
+      }
+    }
+  },
+  "false_positive_rates_both": {
+    "short": {
+      "induction": {
+        "ci_excl": 0.825,
+        "width": 0.08399999999999999,
+        "point": 0.034526176403996287,
+        "lo": 0.012,
+        "hi": 0.094,
+        "right_censored": 0.0,
+        "structure": "both"
+      },
+      "selection": {
+        "ci_excl": 0.03333333333333333,
+        "width": 0.02,
+        "point": 0.0003015441984216103,
+        "lo": 0.0,
+        "hi": 0.02,
+        "right_censored": 0.0,
+        "structure": "both"
+      },
+      "cytotoxicity": {
+        "ci_excl": 0.03333333333333333,
+        "width": 0.02,
+        "point": 0.00029821189751655635,
+        "lo": 0.0,
+        "hi": 0.02,
+        "right_censored": 0.0,
+        "structure": "both"
+      }
+    },
+    "extended": {
+      "induction": {
+        "ci_excl": 1.0,
+        "width": 0.048,
+        "point": 0.030599909310115123,
+        "lo": 0.016,
+        "hi": 0.066,
+        "right_censored": 0.0,
+        "structure": "both"
+      },
+      "selection": {
+        "ci_excl": 0.025,
+        "width": 0.004,
+        "point": 4.95888065879551e-12,
+        "lo": 0.0,
+        "hi": 0.004,
+        "right_censored": 0.0,
+        "structure": "both"
+      },
+      "cytotoxicity": {
+        "ci_excl": 0.025,
+        "width": 0.004,
+        "point": 1.0565307560166289e-10,
+        "lo": 0.0,
+        "hi": 0.004,
+        "right_censored": 0.0,
+        "structure": "both"
+      }
+    }
+  },
+  "model_choice": {
+    "induction": {
+      "fractions_only": {
+        "ind": 0.8916666666666667,
+        "both": 0.10833333333333334
+      },
+      "with_counts": {
+        "both": 0.8666666666666667,
+        "ind": 0.13333333333333333
+      }
+    },
+    "selection": {
+      "fractions_only": {
+        "cyto": 0.5666666666666667,
+        "sel": 0.4083333333333333,
+        "both": 0.025
+      },
+      "with_counts": {
+        "sel": 0.9416666666666667,
+        "both": 0.058333333333333334
+      }
+    },
+    "cytotoxicity": {
+      "fractions_only": {
+        "cyto": 0.6166666666666667,
+        "sel": 0.35833333333333334,
+        "both": 0.025
+      },
+      "with_counts": {
+        "cyto": 1.0
+      }
+    }
+  },
+  "washout": {
+    "max_frac_gap": 1.1573519920204944e-12,
+    "logn_gap_sel_cyt": 2.858649657588156,
+    "x_at_washout": {
+      "induction": 0.2000000000011717,
+      "selection": 0.20000000000001442,
+      "cytotoxicity": 0.20000000000001508
+    },
+    "log_total_at_washout": {
+      "induction": 19.102529699246222,
+      "selection": 19.495490587400006,
+      "cytotoxicity": 16.63684092981185
+    }
+  },
+  "truths": {
+    "induction": {
+      "d_beta": 0.032437643740258926,
+      "d_fit": 0.0,
+      "kill_N": 0.0,
+      "kill_S": 0.0,
+      "d_gamma": 0.0
+    },
+    "selection": {
+      "d_beta": 0.0,
+      "d_fit": 0.20418926123952955,
+      "kill_N": 0.0,
+      "kill_S": 0.0,
+      "d_gamma": 0.0
+    },
+    "cytotoxicity": {
+      "d_beta": 0.0,
+      "d_fit": 0.0,
+      "kill_N": 0.20418926124265205,
+      "kill_S": 0.0,
+      "d_gamma": 0.0
+    }
+  },
+  "design": {
+    "detect_day": 21.6,
+    "titration_20x": false,
+    "titration_100x": true,
+    "titration_20x_contrast": 0.015695298201992128,
+    "titration_100x_contrast": 0.07272153526446766,
+    "titration_20x_power": 0.07382520634215468,
+    "titration_100x_power": 0.5554140749566986,
+    "titration_20x_power_upper_tail": 0.06591612460970285,
+    "titration_100x_power_upper_tail": 0.5553894638698187,
+    "power_100x_n6": 0.8434757446325495,
+    "power_vs_replication": {
+      "folds": [
+        20,
+        50,
+        100,
+        200
+      ],
+      "reps": [
+        3,
+        4,
+        6,
+        8
+      ],
+      "eps_lo": 0.001,
+      "day": 7.0,
+      "sigma": 0.03,
+      "grid": {
+        "20": {
+          "contrast": 0.015695298201992128,
+          "eps_hi": 0.02,
+          "power_by_n_rep": {
+            "3": 0.07382520634215468,
+            "4": 0.08189491632645043,
+            "6": 0.09819499227119578,
+            "8": 0.11467853681141532
+          }
+        },
+        "50": {
+          "contrast": 0.03870913945866168,
+          "eps_hi": 0.05,
+          "power_by_n_rep": {
+            "3": 0.20078028129940972,
+            "4": 0.2521024150361889,
+            "6": 0.3522816740160853,
+            "8": 0.44629049138216464
+          }
+        },
+        "100": {
+          "contrast": 0.07272153526446766,
+          "eps_hi": 0.1,
+          "power_by_n_rep": {
+            "3": 0.5554140749566986,
+            "4": 0.6787002840600476,
+            "6": 0.8434757446325495,
+            "8": 0.9289650419940253
+          }
+        },
+        "200": {
+          "contrast": 0.127047428204732,
+          "eps_hi": 0.2,
+          "power_by_n_rep": {
+            "3": 0.956139454768001,
+            "4": 0.988544463826108,
+            "6": 0.9993738437023191,
+            "8": 0.9999720014094314
+          }
+        }
+      }
+    },
+    "n_rep": 3,
+    "titration_20x_fold": 20.0,
+    "titration_100x_fold": 100.0,
+    "fold_for_80pct_power": 141.0583511601734,
+    "eps_hi_for_80pct_power": 0.1410583511601734,
+    "titration_noise_floor": 0.06789639165669997,
+    "sigma_bio": 0.03,
+    "detect_search_horizon_days": 200.0
+  },
+  "designs_spec": {
+    "short": [
+      0.0,
+      3.0,
+      7.0,
+      10.0,
+      14.0
+    ],
+    "extended": [
+      0.0,
+      3.0,
+      7.0,
+      10.0,
+      14.0,
+      21.0,
+      28.0
+    ]
+  },
+  "boolean": {
+    "control": {
+      "stem_basin": 0.196075439453125,
+      "immortal_basin": 0.09698486328125,
+      "stem_basin_se": 0.0019169894799174543,
+      "immortal_basin_se": 0.00135335916702403,
+      "n_attractors": 4,
+      "n_traj": 32,
+      "tert_start": 0,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "arsenic": {
+      "stem_basin": 0.274993896484375,
+      "immortal_basin": 0.135986328125,
+      "stem_basin_se": 0.00206738473347851,
+      "immortal_basin_se": 0.0014628324749708687,
+      "n_attractors": 4,
+      "n_traj": 32,
+      "tert_start": 0,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "arsenic_FZD10_kd": {
+      "stem_basin": 0.0,
+      "immortal_basin": 0.0,
+      "stem_basin_se": 0.0,
+      "immortal_basin_se": 0.0,
+      "n_attractors": 2,
+      "n_traj": 32,
+      "tert_start": 0,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "arsenic_WNT_inhib": {
+      "stem_basin": 0.0,
+      "immortal_basin": 0.0,
+      "stem_basin_se": 0.0,
+      "immortal_basin_se": 0.0,
+      "n_attractors": 2,
+      "n_traj": 32,
+      "tert_start": 0,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "E2F2_kd": {
+      "stem_basin": 0.0,
+      "immortal_basin": 0.0,
+      "stem_basin_se": 0.0,
+      "immortal_basin_se": 0.0,
+      "n_attractors": 2,
+      "n_traj": 32,
+      "tert_start": 0,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "unsupported": {
+      "stem_basin": 1.0,
+      "immortal_basin": 0.5,
+      "stem_basin_se": 0.0,
+      "immortal_basin_se": 0.0,
+      "n_attractors": 2,
+      "n_traj": 32,
+      "tert_start": 0,
+      "reach_frac": 1.0,
+      "mfpt": 46.6125,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    }
+  },
+  "boolean_tert_on": {
+    "control": {
+      "tert_start": 1,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "arsenic": {
+      "tert_start": 1,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "arsenic_FZD10_kd": {
+      "tert_start": 1,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "arsenic_WNT_inhib": {
+      "tert_start": 1,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "E2F2_kd": {
+      "tert_start": 1,
+      "reach_frac": 0.0,
+      "mfpt": null,
+      "reach_immortal": 0.0,
+      "mfpt_immortal": null,
+      "n_runs": 400
+    },
+    "unsupported": {
+      "tert_start": 1,
+      "reach_frac": 1.0,
+      "mfpt": 46.6125,
+      "reach_immortal": 1.0,
+      "mfpt_immortal": 56.525,
+      "n_runs": 400
+    }
+  },
+  "ensemble": {
+    "n_requested": 60,
+    "n_ok": 60,
+    "n_unmatched": 0,
+    "target_fold_over_control": 3.5435595774162687,
+    "target_fraction_cap": 0.9,
+    "detect_search_horizon_days": 240.0,
+    "audited_claims": [
+      "V5",
+      "V6",
+      "V8",
+      "V12",
+      "follow-up separability"
+    ],
+    "not_audited_claims": [
+      "combined-structure profiles",
+      "sorting power",
+      "Boolean layer"
+    ],
+    "seed": 20260825,
+    "audit": {
+      "V5": 0.7333333333333333,
+      "V6": 0.8723404255319149,
+      "V8": 0.8166666666666667,
+      "V12": 1.0
+    },
+    "audit_denominator": {
+      "V5": 60,
+      "V6": 47,
+      "V8": 60,
+      "V12": 60
+    },
+    "n_v6_draws_dropped_for_censoring": 13,
+    "detect_threshold": 0.048009998958550286,
+    "detect_days_past_endpoint": {
+      "p5": 5.075,
+      "p50": 9.5,
+      "p95": 38.27499999999999
+    },
+    "frac_draws_separable_within_240d": 0.45,
+    "cyto_ci_width": {
+      "short": {
+        "p5": 0.0033000000000000004,
+        "p50": 0.006,
+        "p95": 0.01469999999999999
+      },
+      "extended": {
+        "p5": 0.002,
+        "p50": 0.004,
+        "p95": 0.011999999999999997
+      }
+    },
+    "not_audited": {
+      "V7": "algebraic: x depends on the net rates only through a - b",
+      "V3/V15": "network wiring, not a rate"
+    },
+    "interpretation": "Heuristic sensitivity bands over baseline rates that were chosen, not measured. NOT posteriors, confidence intervals or credible intervals. The agents are re-matched inside every draw."
+  },
+  "provenance": {
+    "n_datasets_per_truth_and_design": 120,
+    "n_ensemble_draws": 60,
+    "n_replicates_per_timepoint": 3,
+    "sigma_fraction_per_replicate": 0.03,
+    "sigma_logcount_per_replicate": 0.15,
+    "likelihood": "Gaussian on replicate means; log counts projected onto orthonormal Helmert contrasts",
+    "interval": "grid profile likelihood, 2 log-likelihood units",
+    "model_selection": "AICc",
+    "boolean_trajectories_per_start": 0,
+    "python": "3.13.9",
+    "numpy": "2.5.1",
+    "scipy": "1.18.0"
+  },
+  "n_datasets": 120,
+  "target_x": 0.2,
+  "match_day": 14.0,
+  "washout_day": 14.0,
+  "n_checks": 17,
+  "n_checks_passed": 17
+}
