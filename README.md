@@ -1,4 +1,4 @@
-# EMD3: minimal reproducibility deposit
+# EMD3: identifiability and experimental-design analysis
 
 An identifiability and experimental-design analysis of exposure-induced
 phenotypic plasticity, with arsenic in non-tumorigenic mammary epithelium as the
