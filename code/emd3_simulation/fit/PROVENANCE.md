@@ -20,11 +20,11 @@ that matter are relationships between structures, not magnitudes.
 
 | source | what it gives | what it cannot give |
 |---|---|---|
-| Yang Y *et al.*, *Food Chem Toxicol* **211**:116003 (2026) — ref 42 | The exemplar: arsenic raises stemness in MCF-10A through E2F2 → FZD10 → Wnt/β-catenin. Fixes which Boolean nodes may be clamped. | Longitudinal composition. Endpoint marker fractions only. |
-| Hernández-Magaña A *et al.*, *npj Syst Biol Appl* **10**:99 (2024) — ref 47 | The published plasticity-network topology the Boolean layer follows. | A validated network for mammary epithelium; it is a hepatocyte model, used as a structural template. |
-| Jagannathan N *et al.* — Transcompp (ref 44), <https://github.com/nsuhasj/Transcompp> | The estimation framework for state-transition rates from sorted-fraction time series; the method this build's inference layer is a stripped-down analogue of. | Exposure-specific rates. Transcompp's deposited series are cell-culture state-transition data without arsenic-specific calibration. |
+| Yang Y *et al.*, *Food Chem Toxicol* **211**:116003 (2026) — (10.1016/j.fct.2026.116003) | The exemplar: arsenic raises stemness in MCF-10A through E2F2 → FZD10 → Wnt/β-catenin. Fixes which Boolean nodes may be clamped. | Longitudinal composition. Endpoint marker fractions only. |
+| Hernández-Magaña A *et al.*, *npj Syst Biol Appl* **10**:99 (2024) — (10.1038/s41540-024-00422-9) | The published plasticity-network topology the Boolean layer follows. | A validated network for mammary epithelium; it is a hepatocyte model, used as a structural template. |
+| Jagannathan N *et al.* — Transcompp (10.1093/bioinformatics/btaa021), <https://github.com/nsuhasj/Transcompp> | The estimation framework for state-transition rates from sorted-fraction time series; the method this build's inference layer is a stripped-down analogue of. | Exposure-specific rates. Transcompp's deposited series are cell-culture state-transition data without arsenic-specific calibration. |
 | Yang *et al.*, *ACS Omega* (10.1021/acsomega.6b00181) | Cadmium in MCF-7 / HepG2, as a possible second agent. | Same limitation: endpoint fractions. |
-| Schroeder *et al.*, *Front Oncol* **14**:1411295 (2024) — ref 41 | Primary human breast cells, non-tumour setting, as an external comparator. | Not a time series with counts. |
+| Schroeder *et al.*, *Front Oncol* **14**:1411295 (2024) — (10.3389/fonc.2024.1411295) | Primary human breast cells, non-tumour setting, as an external comparator. | Not a time series with counts. |
 
 ## Not acquired, and why
 
