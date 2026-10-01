@@ -36,7 +36,7 @@ that matter are relationships between structures, not magnitudes.
 - **Any arsenic longitudinal composition series with absolute counts.** We could
   not locate one. If it does not exist, that is itself the argument for the
   designed experiment this build outputs.
-- **Cadmium (ref 43) and the Schroeder primary-cell comparator (ref 41)** as
+- **Cadmium (10.1021/acsomega.6b00181) and the Schroeder primary-cell comparator (10.3389/fonc.2024.1411295)** as
   held-out arms. Both were listed in the EMD2-4 plan §3.7. Neither is
   implemented, because with endpoint fractions only they would add a second and
   third *unconstrained* parameter set rather than a test. Scoping them out is
