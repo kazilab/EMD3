@@ -1,0 +1,4 @@
+source	identifier	role	bundled	automatic	notes
+Yang et al., Food Chem Toxicol 211, 116003 (2026)	doi:10.1016/j.fct.2026.116003	Arsenic exposure context and pathway perturbations	0	0	Endpoint marker measurements in MCF-10A cells.
+Hernández-Magaña et al., npj Syst Biol Appl 10, 99 (2024)	doi:10.1038/s41540-024-00422-9	Structural template for the Boolean network	0	0	Published hepatocyte network.
+Jagannathan et al., Bioinformatics 36, 2813–2820 (2020)	doi:10.1093/bioinformatics/btaa021	Methodological reference for transition-rate inference	0	0	Transcompp software: https://github.com/nsuhasj/Transcompp
